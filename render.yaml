@@ -1,0 +1,45 @@
+# Render blueprint for MonaLearn.
+#
+# Usage:
+#   1. Push this repo to GitHub.
+#   2. In Render: New > Blueprint > pick this repo. Render reads this file
+#      and provisions both services below.
+#   3. Set ANTHROPIC_API_KEY in the Render dashboard for monalearn-api
+#      (it's marked sync: false below so it's never committed to git).
+#   4. Turn OFF "Auto-Deploy" on monalearn-api in Render's settings if you're
+#      using the GitHub Actions deploy-backend workflow to gate deploys on
+#      CI passing first. Leave it ON if you'd rather let Render deploy on
+#      every push with no gate.
+#
+# Region note: "frankfurt" is used below as a reasonable middle ground for
+# East Africa-based traffic — Render's regions are oregon, ohio, virginia,
+# frankfurt, and singapore. Singapore may be worth testing too; pick
+# whichever measures lower latency for your actual users.
+
+services:
+  - type: web
+    name: monalearn-api
+    runtime: python
+    plan: starter          # swap to "free" while prototyping; free services sleep after 15 min idle
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set the real value in the Render dashboard, not here
+      - key: DATABASE_URL
+        sync: false          # point this at a real Postgres instance (Render Postgres, Supabase, etc.)
+      - key: JWT_SECRET_KEY
+        sync: false          # generate with: python -c "import secrets; print(secrets.token_hex(32))"
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: cron
+    name: monalearn-resource-intelligence
+    runtime: python
+    schedule: "0 */6 * * *"   # every 6 hours
+    rootDir: automation
+    buildCommand: pip install -r requirements.txt
+    startCommand: python resource_intelligence.py

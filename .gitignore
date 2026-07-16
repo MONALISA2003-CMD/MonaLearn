@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Env / secrets
+.env
+
+# Automation script output
+automation/generated_lessons/
+automation/resource_catalog.json
+
+# OS
+.DS_Store

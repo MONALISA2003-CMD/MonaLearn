@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonaLearn — Practical skills, examined properly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F1B2E;
+    --navy-2:#16243C;
+    --brass:#C7A248;
+    --brass-soft:#E4CE8E;
+    --teal:#3A7D77;
+    --parchment:#F3EEE2;
+    --parchment-2:#EAE3D2;
+    --ink:#1A1F2B;
+    --cream:#EDE7D9;
+    --line:rgba(237,231,217,0.14);
+    --line-dark:rgba(26,31,43,0.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--parchment);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    line-height:1.05;
+  }
+  .mono{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.03em;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px; height:1px;
+    background:currentColor;
+    opacity:0.6;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; font-size:inherit; color:inherit;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+  @media (max-width:640px){ .wrap{padding:0 20px;} }
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(243,238,226,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-dark);
+  }
+  .nav-inner{
+    max-width:1180px; margin:0 auto; padding:18px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{
+    font-family:'Fraunces', serif; font-weight:600; font-size:1.25rem;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo .dot{color:var(--brass); font-size:1.4rem; line-height:0;}
+  .nav-links{display:flex; gap:34px; align-items:center;}
+  .nav-links a{font-size:0.92rem; color:var(--ink); opacity:0.75; transition:opacity .2s;}
+  .nav-links a:hover{opacity:1;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:11px 22px; border-radius:3px;
+    font-size:0.9rem; font-weight:600; font-family:'Inter',sans-serif;
+    cursor:pointer; border:1px solid transparent; transition:all .2s;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--navy); color:var(--cream);}
+  .btn-primary:hover{background:#08111E;}
+  .btn-ghost{border-color:var(--line-dark); color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-brass{background:var(--brass); color:var(--navy);}
+  .btn-brass:hover{background:var(--brass-soft);}
+  @media (max-width:900px){ .nav-links a:not(.btn){display:none;} }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:var(--navy);
+    color:var(--cream);
+    padding:96px 0 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(600px 300px at 85% 0%, rgba(199,162,72,0.14), transparent 60%),
+      radial-gradient(500px 260px at 0% 100%, rgba(58,125,119,0.16), transparent 60%);
+    pointer-events:none;
+  }
+  .hero-grid{
+    position:relative; z-index:1;
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:56px;
+    align-items:start;
+  }
+  @media (max-width:960px){ .hero-grid{grid-template-columns:1fr;} }
+  .hero-eyebrow{color:var(--brass-soft); margin-bottom:22px;}
+  .hero h1{font-size:clamp(2.3rem, 4.6vw, 3.5rem); max-width:15ch;}
+  .hero h1 em{color:var(--brass-soft); font-style:normal;}
+  .hero p.lead{
+    margin-top:22px; font-size:1.08rem; line-height:1.65;
+    color:rgba(237,231,217,0.78); max-width:46ch;
+  }
+  .hero-ctas{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap;}
+  .hero-stats{
+    display:flex; gap:34px; margin-top:52px; padding-top:28px;
+    border-top:1px solid var(--line);
+  }
+  .hero-stat .num{font-family:'Fraunces',serif; font-size:1.6rem; color:var(--brass-soft);}
+  .hero-stat .label{font-size:0.78rem; color:rgba(237,231,217,0.6); margin-top:2px;}
+
+  /* Ledger board - signature element */
+  .ledger{
+    background:var(--navy-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:-46px;
+  }
+  .ledger-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 20px; border-bottom:1px solid var(--line);
+  }
+  .ledger-head .title{font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; color:rgba(237,231,217,0.65);}
+  .ledger-head .live{
+    display:flex; align-items:center; gap:7px; font-size:0.72rem; color:var(--brass-soft);
+  }
+  .ledger-head .live .pulse{
+    width:6px; height:6px; border-radius:50%; background:var(--teal);
+    box-shadow:0 0 0 0 rgba(58,125,119,0.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(58,125,119,0.55);}
+    70%{box-shadow:0 0 0 8px rgba(58,125,119,0);}
+    100%{box-shadow:0 0 0 0 rgba(58,125,119,0);}
+  }
+  .ledger-cols{
+    display:grid; grid-template-columns:64px 1.6fr 1fr 0.8fr 0.9fr;
+    padding:10px 20px; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:rgba(237,231,217,0.4);
+  }
+  .ledger-row{
+    display:grid; grid-template-columns:64px 1.6fr 1fr 0.8fr 0.9fr;
+    padding:13px 20px; border-top:1px solid var(--line);
+    align-items:center; font-size:0.86rem;
+    opacity:0; transform:translateY(6px);
+    animation:rowIn .5s ease forwards;
+  }
+  .ledger-row:nth-child(1){animation-delay:.05s;}
+  .ledger-row:nth-child(2){animation-delay:.16s;}
+  .ledger-row:nth-child(3){animation-delay:.27s;}
+  .ledger-row:nth-child(4){animation-delay:.38s;}
+  .ledger-row:nth-child(5){animation-delay:.49s;}
+  .ledger-row:nth-child(6){animation-delay:.60s;}
+  @keyframes rowIn{ to{opacity:1; transform:translateY(0);} }
+  .ledger-row .code{color:var(--brass-soft);}
+  .ledger-row .lang{color:rgba(237,231,217,0.6); font-size:0.78rem;}
+  .ledger-row .level{color:rgba(237,231,217,0.6); font-size:0.78rem;}
+  .status{
+    font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 9px; border-radius:20px; width:fit-content;
+  }
+  .status.live{background:rgba(58,125,119,0.22); color:#8FCFC7;}
+  .status.enrolling{background:rgba(199,162,72,0.18); color:var(--brass-soft);}
+  @media (max-width:640px){
+    .ledger-cols, .ledger-row{grid-template-columns:44px 1.4fr 0.9fr;}
+    .ledger-cols span:nth-child(4), .ledger-cols span:nth-child(5),
+    .ledger-row .lang{display:none;}
+  }
+
+  section{padding:96px 0;}
+  .section-head{max-width:640px; margin-bottom:52px;}
+  .section-head .eyebrow{color:var(--teal); margin-bottom:16px;}
+  .section-head h2{font-size:clamp(1.7rem,3vw,2.3rem); color:var(--ink);}
+  .section-head p{margin-top:14px; color:rgba(26,31,43,0.65); font-size:1.02rem; line-height:1.6;}
+
+  /* ---------- Academies ---------- */
+  .academies{background:var(--parchment);}
+  .academy-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line-dark); border:1px solid var(--line-dark);}
+  @media (max-width:900px){ .academy-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .academy-grid{grid-template-columns:1fr;} }
+  .academy-card{
+    background:var(--parchment); padding:30px 26px; min-height:200px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    transition:background .2s;
+  }
+  .academy-card:hover{background:var(--parchment-2);}
+  .academy-card .mark{
+    font-family:'Fraunces',serif; font-size:0.72rem; color:var(--teal);
+    letter-spacing:0.1em;
+  }
+  .academy-card h3{font-size:1.28rem; margin-top:14px; color:var(--ink);}
+  .academy-card p{font-size:0.9rem; color:rgba(26,31,43,0.6); margin-top:8px; line-height:1.55;}
+  .academy-card .count{margin-top:20px; font-size:0.78rem; color:var(--brass); font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- AI Tutor ---------- */
+  .tutor{background:var(--navy); color:var(--cream);}
+  .tutor .section-head .eyebrow{color:var(--brass-soft);}
+  .tutor .section-head h2{color:var(--cream);}
+  .tutor .section-head p{color:rgba(237,231,217,0.68);}
+  .tutor-grid{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;}
+  @media (max-width:900px){ .tutor-grid{grid-template-columns:1fr;} }
+  .tutor-list{list-style:none; display:flex; flex-direction:column; gap:20px;}
+  .tutor-list li{
+    display:flex; gap:14px; padding-bottom:20px; border-bottom:1px solid var(--line);
+    font-size:0.96rem; color:rgba(237,231,217,0.85);
+  }
+  .tutor-list li:last-child{border-bottom:none;}
+  .tutor-list .glyph{color:var(--teal); font-family:'Fraunces',serif; font-size:1.1rem; flex-shrink:0;}
+  .chat-mock{
+    background:var(--navy-2); border:1px solid var(--line); border-radius:8px; padding:22px;
+  }
+  .chat-mock .bubble{
+    padding:14px 16px; border-radius:8px; font-size:0.9rem; line-height:1.55; margin-bottom:12px; max-width:88%;
+  }
+  .chat-mock .bubble.user{background:rgba(237,231,217,0.08); margin-left:auto; color:var(--cream);}
+  .chat-mock .bubble.ai{background:rgba(199,162,72,0.1); color:var(--cream); border:1px solid rgba(199,162,72,0.2);}
+  .chat-mock .tag{font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(237,231,217,0.4); margin-bottom:6px;}
+
+  /* ---------- Roadmap ---------- */
+  .roadmap{background:var(--parchment-2);}
+  .roadmap-track{display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative;}
+  @media (max-width:800px){ .roadmap-track{grid-template-columns:1fr; gap:24px;} }
+  .roadmap-track::before{
+    content:"";
+    position:absolute; top:11px; left:0; right:0; height:1px; background:var(--line-dark);
+  }
+  @media (max-width:800px){ .roadmap-track::before{display:none;} }
+  .week{padding-right:24px;}
+  .week .marker{
+    width:22px; height:22px; border-radius:50%; background:var(--parchment-2);
+    border:2px solid var(--teal); position:relative; z-index:1; margin-bottom:18px;
+  }
+  .week .range{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--teal); text-transform:uppercase; letter-spacing:0.06em;}
+  .week h4{font-family:'Fraunces',serif; font-weight:600; font-size:1.08rem; margin-top:8px; color:var(--ink);}
+  .week p{font-size:0.86rem; color:rgba(26,31,43,0.6); margin-top:6px; line-height:1.5;}
+
+  /* ---------- Certification ---------- */
+  .cert{background:var(--navy); color:var(--cream);}
+  .cert .section-head .eyebrow{color:var(--teal);}
+  .cert .section-head h2, .cert .section-head p{color:var(--cream);}
+  .cert .section-head p{color:rgba(237,231,217,0.68);}
+  .cert-grid{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;}
+  @media (max-width:900px){ .cert-grid{grid-template-columns:1fr;} }
+  .cert-card{
+    background:var(--parchment); color:var(--ink); border-radius:8px; padding:36px;
+    position:relative; border:1px solid rgba(0,0,0,0.06);
+  }
+  .cert-card::before{
+    content:"";
+    position:absolute; top:26px; right:26px; width:58px; height:58px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--brass-soft), var(--brass) 70%);
+    box-shadow:0 4px 14px rgba(199,162,72,0.35);
+  }
+  .cert-card .eyebrow{color:var(--teal); margin-bottom:18px;}
+  .cert-card h3{font-size:1.4rem; max-width:70%;}
+  .cert-card .id{font-family:'IBM Plex Mono',monospace; font-size:0.82rem; margin-top:24px; color:rgba(26,31,43,0.55);}
+  .cert-card .id span{color:var(--ink); font-weight:500;}
+  .cert-card .verify{
+    margin-top:26px; padding-top:20px; border-top:1px dashed rgba(26,31,43,0.2);
+    display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:rgba(26,31,43,0.55);
+  }
+  .cert-list{list-style:none; display:flex; flex-direction:column; gap:18px;}
+  .cert-list li{display:flex; gap:14px; font-size:0.96rem; color:rgba(237,231,217,0.85);}
+  .cert-list .glyph{color:var(--brass-soft); font-family:'Fraunces',serif;}
+
+  /* ---------- Pricing ---------- */
+  .pricing{background:var(--parchment);}
+  .price-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px;}
+  @media (max-width:1000px){ .price-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .price-grid{grid-template-columns:1fr;} }
+  .price-card{
+    border:1px solid var(--line-dark); border-radius:6px; padding:26px 22px;
+    display:flex; flex-direction:column; background:var(--parchment);
+    transition:border-color .2s, transform .2s;
+  }
+  .price-card:hover{border-color:var(--brass); transform:translateY(-3px);}
+  .price-card.featured{background:var(--navy); color:var(--cream); border-color:var(--navy);}
+  .price-card .tier{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--teal);}
+  .price-card.featured .tier{color:var(--brass-soft);}
+  .price-card h3{font-family:'Fraunces',serif; font-size:1.3rem; margin-top:10px;}
+  .price-card .desc{font-size:0.84rem; margin-top:8px; opacity:0.65; line-height:1.5; min-height:52px;}
+  .price-card ul{list-style:none; margin-top:18px; display:flex; flex-direction:column; gap:9px; flex-grow:1;}
+  .price-card li{font-size:0.82rem; padding-left:16px; position:relative; opacity:0.85;}
+  .price-card li::before{content:"—"; position:absolute; left:0; opacity:0.5;}
+  .price-card .btn{margin-top:22px; width:100%;}
+  .checkout-status{
+    margin-top:24px; text-align:center; font-size:0.86rem; padding:12px 16px; border-radius:6px;
+    background:rgba(197,106,80,0.1); border:1px solid rgba(197,106,80,0.25); color:#A34A34;
+    max-width:520px; margin-left:auto; margin-right:auto;
+  }
+
+  /* ---------- Enterprise band ---------- */
+  .enterprise{
+    background:var(--teal); color:var(--cream);
+    padding:64px 0;
+  }
+  .ent-inner{display:flex; justify-content:space-between; align-items:center; gap:30px; flex-wrap:wrap;}
+  .ent-inner h2{font-size:1.7rem; max-width:20ch; color:var(--cream);}
+  .ent-inner p{margin-top:10px; opacity:0.85; max-width:44ch;}
+  .enterprise .btn-brass{color:var(--navy);}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--navy); color:rgba(237,231,217,0.6); padding:60px 0 30px;}
+  .foot-grid{display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:40px; padding-bottom:40px; border-bottom:1px solid var(--line);}
+  @media (max-width:800px){ .foot-grid{grid-template-columns:1fr 1fr;} }
+  .foot-grid .logo{color:var(--cream);}
+  .foot-grid p{font-size:0.86rem; margin-top:14px; max-width:32ch; line-height:1.6;}
+  .foot-col h5{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(237,231,217,0.4); margin-bottom:14px;}
+  .foot-col a{display:block; font-size:0.88rem; margin-bottom:10px; color:rgba(237,231,217,0.7);}
+  .foot-bottom{display:flex; justify-content:space-between; padding-top:24px; font-size:0.78rem; flex-wrap:wrap; gap:10px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+  :focus-visible{outline:2px solid var(--brass); outline-offset:2px;}
+
+  /* ---------- Skip link ---------- */
+  .skip-link{
+    position:absolute; left:-999px; top:auto;
+    background:var(--brass); color:var(--navy); padding:12px 18px;
+    border-radius:3px; font-size:0.85rem; font-weight:600; z-index:200;
+  }
+  .skip-link:focus{left:16px; top:16px;}
+
+  /* ---------- Mobile nav ---------- */
+  .nav-toggle{
+    display:none; background:none; border:none; cursor:pointer;
+    width:34px; height:34px; flex-direction:column; justify-content:center; gap:5px;
+  }
+  .nav-toggle span{display:block; width:100%; height:2px; background:var(--ink); transition:transform .25s, opacity .25s;}
+  @media (max-width:900px){
+    .nav-toggle{display:flex;}
+    .nav-links{
+      position:fixed; inset:0 0 0 auto; width:min(320px,86vw); height:100vh;
+      background:var(--navy); flex-direction:column; align-items:flex-start;
+      padding:90px 28px 28px; gap:22px;
+      transform:translateX(100%); transition:transform .3s ease;
+      z-index:60;
+    }
+    .nav-links.open{transform:translateX(0);}
+    .nav-links a{display:block; color:var(--cream); opacity:0.85; font-size:1.02rem;}
+    .nav-links a.btn{width:100%;}
+    .nav-scrim{
+      position:fixed; inset:0; background:rgba(15,27,46,0.4); opacity:0; pointer-events:none;
+      transition:opacity .3s; z-index:55;
+    }
+    .nav-scrim.open{opacity:1; pointer-events:auto;}
+  }
+
+  /* ---------- Path chips ---------- */
+  .path-chips{display:flex; flex-wrap:wrap; gap:10px; margin-top:28px;}
+  .path-chip{
+    font-size:0.84rem; padding:9px 16px; border-radius:20px;
+    border:1px solid var(--line); color:rgba(237,231,217,0.82);
+    background:rgba(237,231,217,0.04); cursor:pointer; transition:all .2s;
+  }
+  .path-chip:hover{border-color:var(--brass-soft); color:var(--brass-soft);}
+
+  /* ---------- Ledger search ---------- */
+  .ledger-search{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(237,231,217,0.06); border:1px solid var(--line);
+    border-radius:5px; padding:10px 14px; margin-bottom:16px;
+  }
+  .ledger-search svg{flex-shrink:0; opacity:0.5;}
+  .ledger-search input{
+    background:none; border:none; outline:none; color:var(--cream);
+    font-family:'Inter',sans-serif; font-size:0.88rem; width:100%;
+  }
+  .ledger-search input::placeholder{color:rgba(237,231,217,0.4);}
+  .ledger-empty{padding:26px 20px; font-size:0.86rem; color:rgba(237,231,217,0.5); display:none;}
+  .ledger-row.hidden{display:none;}
+
+  /* ---------- Scroll reveal ---------- */
+  .reveal{opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- Why section ---------- */
+  .why{background:var(--parchment-2);}
+  .why-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+  @media (max-width:800px){ .why-grid{grid-template-columns:1fr;} }
+  .why-card{background:var(--parchment); border:1px solid var(--line-dark); border-radius:6px; padding:26px;}
+  .why-card .num{font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--teal);}
+  .why-card h3{font-size:1.1rem; margin-top:10px;}
+  .why-card p{font-size:0.88rem; color:rgba(26,31,43,0.62); margin-top:8px; line-height:1.55;}
+
+  /* ---------- Verify box ---------- */
+  .verify-box{margin-top:28px; background:rgba(237,231,217,0.06); border:1px solid var(--line); border-radius:6px; padding:18px;}
+  .verify-box label{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(237,231,217,0.5);}
+  .verify-row{display:flex; gap:10px; margin-top:10px;}
+  .verify-row input{
+    flex:1; background:rgba(237,231,217,0.06); border:1px solid var(--line); border-radius:4px;
+    padding:10px 12px; color:var(--cream); font-family:'IBM Plex Mono',monospace; font-size:0.84rem; outline:none;
+  }
+  .verify-row input:focus{border-color:var(--brass);}
+  .verify-row .btn{padding:10px 18px; font-size:0.84rem;}
+  .verify-result{
+    margin-top:12px; font-size:0.84rem; padding:10px 12px; border-radius:4px; display:none;
+  }
+  .verify-result.show{display:flex; align-items:center; gap:8px;}
+  .verify-result.ok{background:rgba(58,125,119,0.15); color:#8FCFC7;}
+  .verify-result.bad{background:rgba(199,90,72,0.15); color:#E5A695;}
+
+  /* ---------- FAQ ---------- */
+  .faq{background:var(--parchment);}
+  .faq-list{max-width:800px;}
+  .faq-item{border-bottom:1px solid var(--line-dark);}
+  .faq-q{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:20px 0; display:flex; justify-content:space-between; align-items:center; gap:20px;
+    font-family:'Fraunces',serif; font-size:1.02rem; color:var(--ink);
+  }
+  .faq-q .plus{font-family:'Inter',sans-serif; font-size:1.3rem; color:var(--brass); transition:transform .25s; flex-shrink:0;}
+  .faq-item.open .plus{transform:rotate(45deg);}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .faq-a p{font-size:0.9rem; color:rgba(26,31,43,0.65); line-height:1.6; padding-bottom:20px; max-width:60ch;}
+
+  /* ---------- Sticky mobile CTA ---------- */
+  .sticky-cta{
+    display:none; position:fixed; bottom:0; left:0; right:0; z-index:70;
+    background:var(--navy); padding:12px 18px; box-shadow:0 -6px 18px rgba(0,0,0,0.2);
+    align-items:center; justify-content:space-between; gap:14px;
+  }
+  .sticky-cta span{font-size:0.82rem; color:var(--cream);}
+  @media (max-width:640px){ .sticky-cta{display:flex;} body{padding-bottom:66px;} }
+
+  .lang-flags{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .lang-flags span{
+    font-size:0.78rem; background:rgba(237,231,217,0.06); border:1px solid var(--line);
+    padding:4px 10px; border-radius:14px; color:rgba(237,231,217,0.75);
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo">MonaLearn<span class="dot">·</span></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="#academies">Academies</a>
+      <a href="#tutor">AI Tutor</a>
+      <a href="#certification">Certification</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#enterprise-band">For teams</a>
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="#pricing" class="btn btn-primary">Start learning</a>
+    </nav>
+  </div>
+  <div class="nav-scrim" id="navScrim"></div>
+</header>
+
+<main id="main">
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow hero-eyebrow">A learning institution that never closes</div>
+        <h1>Practical skills, <em>examined properly.</em></h1>
+        <p class="lead">MonaLearn pairs real curricula in business, finance, marketing, administration and seven languages with an AI tutor that's on shift at 3am and 3pm alike. Finish a course, sit the assessment, carry a certificate that checks itself.</p>
+        <div class="path-chips" role="group" aria-label="Quick paths">
+          <a href="#academies" class="path-chip">Start a business</a>
+          <a href="#academies" class="path-chip">Get better at my job</a>
+          <a href="#academies" class="path-chip">Learn a language</a>
+          <a href="#enterprise-band" class="path-chip">Train my team</a>
+        </div>
+        <div class="hero-ctas">
+          <a href="#pricing" class="btn btn-brass">Start learning free</a>
+          <a href="#certification" class="btn btn-ghost" style="color:var(--cream); border-color:var(--line);">See how it's assessed</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num">5</div><div class="label">Academies</div></div>
+          <div class="hero-stat"><div class="num">7</div><div class="label">Languages taught</div></div>
+          <div class="hero-stat"><div class="num">24/7</div><div class="label">AI tutor access</div></div>
+        </div>
+      </div>
+      <div class="ledger">
+        <div class="ledger-head">
+          <div class="title">Enrolling now</div>
+          <div class="live"><span class="pulse"></span> Live catalog</div>
+        </div>
+        <div style="padding:14px 20px 0;">
+          <div class="ledger-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="ledgerSearch" placeholder="Search a track, code or language…" aria-label="Search courses">
+          </div>
+        </div>
+        <div class="ledger-cols">
+          <span>Code</span><span>Track</span><span>Language</span><span>Level</span><span>Status</span>
+        </div>
+        <div id="ledgerRows">
+        <div class="ledger-row"><span class="code mono">BUS 101</span><span>Entrepreneurship Fundamentals</span><span class="lang">English</span><span class="level">Beginner</span><span class="status enrolling">Enrolling</span></div>
+        <div class="ledger-row"><span class="code mono">FIN 214</span><span>Financial Statements</span><span class="lang">EN · Kiswahili</span><span class="level">Intermediate</span><span class="status enrolling">Enrolling</span></div>
+        <div class="ledger-row"><span class="code mono">MKT 132</span><span>Digital Marketing</span><span class="lang">EN · Español</span><span class="level">Beginner</span><span class="status live">Live</span></div>
+        <div class="ledger-row"><span class="code mono">ADM 108</span><span>Office Administration</span><span class="lang">EN · Français</span><span class="level">Beginner</span><span class="status enrolling">Enrolling</span></div>
+        <div class="ledger-row"><span class="code mono">LANG 301</span><span>Business Mandarin</span><span class="lang">中文</span><span class="level">Advanced</span><span class="status live">Live</span></div>
+        <div class="ledger-row"><span class="code mono">LANG 118</span><span>Arabic for Trade</span><span class="lang">العربية</span><span class="level">Beginner</span><span class="status enrolling">Enrolling</span></div>
+        </div>
+        <div class="ledger-empty" id="ledgerEmpty">No tracks match that search. Try a code like "FIN" or a language.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="academies" id="academies" style="padding-top:150px;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Where to begin</div>
+      <h2>Five academies, one transcript.</h2>
+      <p>Every course sits on the same record, so a certificate in bookkeeping and a certificate in Swahili speak to the same profile. Pick a track, or let the AI build one around where you're headed.</p>
+    </div>
+    <div class="academy-grid">
+      <div class="academy-card reveal">
+        <div><div class="mark mono">01</div><h3>Business &amp; Entrepreneurship</h3><p>From validating an idea to preparing for investment, taught through case studies and simulations rather than slides.</p></div>
+        <div class="count">38 courses</div>
+      </div>
+      <div class="academy-card reveal">
+        <div><div class="mark mono">02</div><h3>Finance &amp; Accounting</h3><p>Bookkeeping, financial statements and budgeting, practiced on real ledgers with an AI assistant checking your work.</p></div>
+        <div class="count">24 courses</div>
+      </div>
+      <div class="academy-card reveal">
+        <div><div class="mark mono">03</div><h3>Marketing &amp; Sales</h3><p>Customer psychology through to running a campaign end to end, including a brand you build from nothing.</p></div>
+        <div class="count">29 courses</div>
+      </div>
+      <div class="academy-card reveal">
+        <div><div class="mark mono">04</div><h3>Office Administration</h3><p>The software and the judgment: scheduling, records, reporting and the etiquette that holds an office together.</p></div>
+        <div class="count">21 courses</div>
+      </div>
+      <div class="academy-card reveal">
+        <div><div class="mark mono">05</div><h3>Language Institute</h3><p>Arabic, French, Kiswahili, German, Spanish, Mandarin and Sign Language, from first words to boardroom fluency.</p></div>
+        <div class="count">7 languages</div>
+      </div>
+      <div class="academy-card" style="background:var(--navy); color:var(--cream);">
+        <div><div class="mark mono" style="color:var(--brass-soft);">AI</div><h3>Not sure yet?</h3><p style="color:rgba(237,231,217,0.65);">Tell the tutor what you're working toward. It drafts a course of study across academies within minutes.</p></div>
+        <a href="#tutor" class="count" style="color:var(--brass-soft);">Talk to the tutor →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">What's different here</div>
+      <h2>Most course platforms end at the video. This one ends at proof.</h2>
+      <p>A lot of online learning stops at "watched to the end." MonaLearn is built around the three things that tend to be missing elsewhere.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="num mono">01</div>
+        <h3>Assessment, not attendance</h3>
+        <p>Every track ends in a real assessment, not a completion badge for pressing play. Your certificate carries the score.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="num mono">02</div>
+        <h3>One profile, five academies</h3>
+        <p>Business, finance, marketing, admin and language sit on the same transcript, so a career plan can pull from all five instead of one course library.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="num mono">03</div>
+        <h3>Practice, not just theory</h3>
+        <p>Business simulations and language conversation practice stand in for the workplace before the workplace does.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tutor" id="tutor">
+  <div class="wrap">
+    <div class="tutor-grid">
+      <div>
+        <div class="section-head reveal" style="margin-bottom:36px;">
+          <div class="eyebrow">The AI power system</div>
+          <h2>An instructor who doesn't sleep.</h2>
+          <p>The tutor teaches the way a good one does: it explains differently the second time, notices where you're guessing, and adjusts the next lesson before you ask.</p>
+        </div>
+        <ul class="tutor-list">
+          <li><span class="glyph">Aa</span><span>Explains a lesson a second and third way until it lands, with examples pulled from your own field.</span></li>
+          <li><span class="glyph">%</span><span>Watches quiz results and quietly reorders what's next, spending more time where you're weakest.</span></li>
+          <li><span class="glyph">→</span><span>Builds the week's study plan and adjusts it when you fall behind, instead of leaving you to catch up alone.</span></li>
+        </ul>
+      </div>
+      <div class="chat-mock">
+        <div class="tag">MKT 132 · Digital Marketing</div>
+        <div class="bubble user">I don't get why my ad's reach is high but nobody's clicking.</div>
+        <div class="tag" style="margin-top:4px;">MonaLearn tutor</div>
+        <div class="bubble ai">Reach and click-through are answering different questions. Reach counts who saw it. A low click-through usually points to the offer or the image, not the audience. Want to look at your headline against the CTR benchmark from Lesson 4?</div>
+        <div class="bubble user">Yes, and can you quiz me on this after?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="roadmap">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Built around where you're headed</div>
+      <h2>Tell it the goal. It plans the term.</h2>
+      <p>A student who wants to start a business doesn't need a syllabus, they need a sequence. Here's what MonaLearn drafts for "I want to become an entrepreneur":</p>
+    </div>
+    <div class="roadmap-track">
+      <div class="week">
+        <div class="marker"></div>
+        <div class="range">Weeks 1–3</div>
+        <h4>Entrepreneurship fundamentals</h4>
+        <p>Opportunity spotting, customer discovery and a validated idea by the end of week three.</p>
+      </div>
+      <div class="week">
+        <div class="marker"></div>
+        <div class="range">Weeks 4–6</div>
+        <h4>Accounting basics</h4>
+        <p>Enough bookkeeping to read your own numbers before you're relying on someone else's.</p>
+      </div>
+      <div class="week">
+        <div class="marker"></div>
+        <div class="range">Weeks 7–10</div>
+        <h4>Digital marketing</h4>
+        <p>Building an audience for the idea, and a small paid campaign to test it against real interest.</p>
+      </div>
+      <div class="week">
+        <div class="marker"></div>
+        <div class="range">Weeks 11–13</div>
+        <h4>Sales &amp; business planning</h4>
+        <p>Turning interest into a first sale, and a business plan built from what actually worked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cert" id="certification">
+  <div class="wrap">
+    <div class="cert-grid">
+      <div>
+        <div class="section-head reveal" style="margin-bottom:36px;">
+          <div class="eyebrow">Certification</div>
+          <h2>A certificate that checks itself.</h2>
+          <p>Every certificate carries a unique ID and a QR code. Anyone, an employer, a school, a client, can verify it in seconds without emailing you for proof.</p>
+        </div>
+        <ul class="cert-list">
+          <li><span class="glyph">✓</span><span>Skills assessed, not just courses attended, with your assessment score attached.</span></li>
+          <li><span class="glyph">✓</span><span>Projects completed during the course, listed alongside the credential itself.</span></li>
+          <li><span class="glyph">✓</span><span>A public verification page, so the certificate stands on its own.</span></li>
+        </ul>
+        <div class="verify-box">
+          <label class="mono" for="verifyInput">Verify a certificate</label>
+          <div class="verify-row">
+            <input type="text" id="verifyInput" placeholder="e.g. MNL-2026-KM-08931">
+            <button class="btn btn-brass" id="verifyBtn" type="button">Verify</button>
+          </div>
+          <div class="verify-result" id="verifyResult"></div>
+        </div>
+      </div>
+      <div class="cert-card">
+        <div class="eyebrow">Certificate of completion</div>
+        <h3>Digital Marketing<br>MKT 132</h3>
+        <div class="id">Certificate ID <span>MNL-2026-KM-08931</span><br>Assessment score <span>91 / 100</span></div>
+        <div class="verify"><span>Scan to verify</span><span class="mono">monalearn.com/verify</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Five ways to enrol</div>
+      <h2>Pay for how far you're going.</h2>
+      <p>Start free, upgrade when a certificate or a career plan is worth paying for, or bring your whole team.</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-card reveal">
+        <div class="tier mono">Free</div>
+        <h3>Get started</h3>
+        <div class="desc">A handful of courses and basic AI help, no card required.</div>
+        <ul><li>3 courses at a time</li><li>Standard AI assistance</li><li>Community discussions</li></ul>
+        <a href="login.html" class="btn btn-ghost">Create account</a>
+      </div>
+      <div class="price-card reveal">
+        <div class="tier mono">Basic</div>
+        <h3>One academy</h3>
+        <div class="desc">Full access to a single academy of your choice.</div>
+        <ul><li>Unlimited courses, one academy</li><li>Progress tracking</li><li>Practice assessments</li></ul>
+        <button class="btn btn-ghost checkout-btn" data-plan="basic">Choose Basic</button>
+      </div>
+      <div class="price-card featured reveal">
+        <div class="tier mono">Professional</div>
+        <h3>Every academy</h3>
+        <div class="desc">All five academies and the advanced tutor, for people building a career on it.</div>
+        <ul><li>All courses, all languages</li><li>Advanced AI tutor</li><li>Verified certificates</li></ul>
+        <button class="btn btn-brass checkout-btn" data-plan="professional">Choose Professional</button>
+      </div>
+      <div class="price-card reveal">
+        <div class="tier mono">Premium</div>
+        <h3>Full coaching</h3>
+        <div class="desc">Unlimited AI coaching and a career plan built with you, not just for you.</div>
+        <ul><li>Everything in Professional</li><li>Career coach &amp; CV review</li><li>Exclusive content</li></ul>
+        <button class="btn btn-ghost checkout-btn" data-plan="premium">Choose Premium</button>
+      </div>
+      <div class="price-card reveal">
+        <div class="tier mono">Enterprise</div>
+        <h3>For teams</h3>
+        <div class="desc">Training assigned across a company, with results a manager can actually see.</div>
+        <ul><li>Employee training at scale</li><li>Team analytics dashboard</li><li>Custom course tracks</li></ul>
+        <a href="mailto:sales@monalearn.com" class="btn btn-ghost">Talk to sales</a>
+      </div>
+    </div>
+    <div class="checkout-status" id="checkoutStatus" style="display:none;"></div>
+  </div>
+</section>
+
+<section class="enterprise" id="enterprise-band">
+  <div class="wrap ent-inner">
+    <div>
+      <h2>Training a team? That's a different conversation.</h2>
+      <p>Custom tracks, seat management and a dashboard your manager will actually open.</p>
+    </div>
+    <a href="#" class="btn btn-brass">Talk to sales</a>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Before you start</div>
+      <h2>Questions people usually ask first.</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Do I need any background to start? <span class="plus">+</span></button>
+        <div class="faq-a"><p>No. Every academy opens with a beginner track, and the AI tutor adjusts pace once it sees how you're doing on the first few lessons.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Can I switch academies after I've started? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Yes, on Professional and above. Your transcript carries over, so a switch from Finance to Marketing doesn't cost you what you've already completed.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">How is a certificate actually verified? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Each certificate gets a unique ID and QR code. Anyone can look it up on the verification page above and see the assessment score behind it, no login required.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">What happens on the Free plan when a course ends? <span class="plus">+</span></button>
+        <div class="faq-a"><p>You keep your progress and can revisit completed lessons. Starting a new course beyond your three active slots means finishing or dropping one first, or upgrading.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Is the AI tutor a replacement for a human instructor? <span class="plus">+</span></button>
+        <div class="faq-a"><p>It handles explanation, practice and pacing around the clock. Live mentor sessions are available separately for people who want a person in the loop as well.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="logo">MonaLearn<span class="dot">·</span></div>
+        <p>A global learning institution for business, finance, marketing, administration and language, open around the clock.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Learn</h5>
+        <a href="#academies">Academies</a>
+        <a href="#tutor">AI Tutor</a>
+        <a href="#certification">Certification</a>
+      </div>
+      <div class="foot-col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#">For organizations</a>
+      </div>
+      <div class="foot-col">
+        <h5>Support</h5>
+        <a href="#">Help center</a>
+        <a href="#">Verify a certificate</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="lang-flags" aria-label="Languages taught">
+      <span>🇸🇦 Arabic</span><span>🇫🇷 French</span><span>🇰🇪 Kiswahili</span><span>🇩🇪 German</span><span>🇪🇸 Spanish</span><span>🇨🇳 Mandarin</span><span>🤟 Sign Language</span>
+    </div>
+    <div class="foot-bottom" style="margin-top:24px;">
+      <span>© 2026 MonaLearn. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<div class="sticky-cta">
+  <span>Start free, no card needed.</span>
+  <a href="#pricing" class="btn btn-brass">Start learning</a>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  // Mobile nav
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  const navScrim = document.getElementById('navScrim');
+  function closeNav(){
+    navLinks.classList.remove('open');
+    navScrim.classList.remove('open');
+    navToggle.setAttribute('aria-expanded','false');
+  }
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navScrim.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  navScrim.addEventListener('click', closeNav);
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
+
+  // Ledger search
+  const ledgerSearch = document.getElementById('ledgerSearch');
+  const ledgerRows = document.querySelectorAll('#ledgerRows .ledger-row');
+  const ledgerEmpty = document.getElementById('ledgerEmpty');
+  ledgerSearch.addEventListener('input', () => {
+    const q = ledgerSearch.value.trim().toLowerCase();
+    let visible = 0;
+    ledgerRows.forEach(row => {
+      const match = row.textContent.toLowerCase().includes(q);
+      row.classList.toggle('hidden', !match);
+      if(match) visible++;
+    });
+    ledgerEmpty.style.display = visible === 0 ? 'block' : 'none';
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-q');
+    const answer = item.querySelector('.faq-a');
+    btn.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(other => {
+        if(other !== item){
+          other.classList.remove('open');
+          other.querySelector('.faq-q').setAttribute('aria-expanded','false');
+          other.querySelector('.faq-a').style.maxHeight = null;
+        }
+      });
+      item.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
+      answer.style.maxHeight = !isOpen ? answer.scrollHeight + 'px' : null;
+    });
+  });
+
+  // Certificate verification demo
+  const knownCerts = { 'MNL-2026-KM-08931': 'Digital Marketing · MKT 132 · Score 91/100' };
+  document.getElementById('verifyBtn').addEventListener('click', () => {
+    const val = document.getElementById('verifyInput').value.trim().toUpperCase();
+    const result = document.getElementById('verifyResult');
+    result.classList.add('show');
+    if(knownCerts[val]){
+      result.classList.remove('bad'); result.classList.add('ok');
+      result.textContent = '✓ Valid — ' + knownCerts[val];
+    } else {
+      result.classList.remove('ok'); result.classList.add('bad');
+      result.textContent = val ? '✕ No certificate found with that ID' : 'Enter a certificate ID above';
+    }
+  });
+
+  // Checkout — pricing buttons call the real backend if logged in,
+  // otherwise send the person to log in first and come straight back here
+  // to resume the checkout they clicked.
+  const checkoutStatus = document.getElementById('checkoutStatus');
+  function showCheckoutStatus(message){
+    checkoutStatus.textContent = message;
+    checkoutStatus.style.display = 'block';
+  }
+
+  async function startCheckout(plan){
+    if(!MonaAuth.getToken()){
+      window.location.href = 'login.html?next=' + encodeURIComponent('landing.html?checkout=' + plan);
+      return;
+    }
+    try{
+      const data = await MonaAuth.authFetch('/api/billing/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      window.location.href = data.checkout_url;
+    } catch(err){
+      showCheckoutStatus("Couldn't start checkout — the backend isn't reachable or billing isn't configured yet (this needs real Stripe keys). See the README.");
+      console.info('MonaLearn checkout error:', err);
+    }
+  }
+
+  document.querySelectorAll('.checkout-btn').forEach(btn => {
+    btn.addEventListener('click', () => startCheckout(btn.getAttribute('data-plan')));
+  });
+
+  // Resume a checkout after returning from login.html?next=...
+  const checkoutParam = new URLSearchParams(window.location.search).get('checkout');
+  if(checkoutParam && ['basic','professional','premium'].includes(checkoutParam) && MonaAuth.getToken()){
+    startCheckout(checkoutParam);
+  } else if(checkoutParam === 'cancelled'){
+    showCheckoutStatus('Checkout was cancelled — no charge was made.');
+  }
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in'));
+  }
+</script>
+</body>
+</html>
