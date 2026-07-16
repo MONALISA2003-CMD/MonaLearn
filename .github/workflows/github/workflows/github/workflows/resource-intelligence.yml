@@ -1,0 +1,35 @@
+name: Resource intelligence check
+
+# Runs the AI Resource Intelligence System's source checker on a schedule.
+# This is a periodic job, not an always-on service, so it runs here for free
+# instead of on a paid host. (Render's cron job in render.yaml does the same
+# thing — pick one, not both, to avoid double-running it. This workflow is
+# the free option if you'd rather not use Render's cron service at all.)
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:          # lets you trigger it manually from the Actions tab
+
+jobs:
+  check-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r automation/requirements.txt
+
+      - name: Run resource check
+        working-directory: automation
+        run: python resource_intelligence.py
+
+      - name: Upload catalog as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resource-catalog
+          path: automation/resource_catalog.json
