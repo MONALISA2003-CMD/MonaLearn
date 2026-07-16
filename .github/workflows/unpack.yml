@@ -19,14 +19,16 @@ jobs:
             echo "No zip file found — nothing to do."
             exit 0
           fi
+          rm -rf _extracted
           unzip -o "$ZIP_FILE" -d _extracted
-          TOPDIR=$(find _extracted -maxdepth 1 -mindepth 1 -type d | head -n 1)
-          shopt -s dotglob
-          if [ -n "$TOPDIR" ] && [ "$(find _extracted -maxdepth 1 -mindepth 1 | wc -l)" -eq 1 ]; then
-            mv "$TOPDIR"/* .
+          shopt -s dotglob nullglob
+          TOPDIRS=(_extracted/*/)
+          if [ "${#TOPDIRS[@]}" -eq 1 ] && [ "$(find _extracted -mindepth 1 -maxdepth 1 | wc -l)" -eq 1 ]; then
+            SRC="${TOPDIRS[0]}"
           else
-            mv _extracted/* .
+            SRC="_extracted/"
           fi
+          cp -a "$SRC." .
           rm -rf _extracted "$ZIP_FILE"
 
       - name: Commit extracted files
