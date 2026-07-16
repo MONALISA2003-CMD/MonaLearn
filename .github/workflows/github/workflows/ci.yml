@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Compile-check backend
+        run: python -m py_compile $(find backend -name "*.py")
+
+      - name: Install automation dependencies
+        run: pip install -r automation/requirements.txt
+
+      - name: Compile-check automation scripts
+        run: python -m py_compile $(find automation -name "*.py")
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm all frontend pages are present
+        run: |
+          test -f frontend/landing.html
+          test -f frontend/dashboard.html
+          test -f frontend/tutor.html
+          test -f frontend/simulation.html
+          test -f frontend/marketplace.html
+          test -f frontend/admin.html
+          test -f frontend/verify.html
+          test -f frontend/login.html
+          test -f frontend/auth.js
+          test -f frontend/instructor.html
+          echo "All frontend files present."
