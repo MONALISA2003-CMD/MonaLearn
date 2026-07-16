@@ -30,6 +30,7 @@ jobs:
           fi
           cp -a "$SRC." .
           rm -rf _extracted "$ZIP_FILE"
+          find .github/workflows -type f ! -name "unpack.yml" -delete 2>/dev/null || true
 
       - name: Commit extracted files
         run: |
