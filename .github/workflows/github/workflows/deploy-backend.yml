@@ -1,0 +1,45 @@
+name: Deploy backend
+
+# Runs checks against the backend, and only if they pass, tells Render to
+# deploy. This requires two things set up once:
+#   1. Turn OFF "Auto-Deploy" on the monalearn-api service in Render, so
+#      Render stops deploying on every push by itself.
+#   2. In Render: monalearn-api > Settings > Deploy Hook, copy the URL, and
+#      add it to this repo as a secret named RENDER_DEPLOY_HOOK_URL
+#      (GitHub repo Settings > Secrets and variables > Actions).
+#
+# If you'd rather skip the gate entirely, leave Render's Auto-Deploy ON and
+# you can delete this workflow — Render will deploy on every push on its own.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "render.yaml"
+
+jobs:
+  test-then-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Compile-check backend
+        run: python -m py_compile $(find backend -name "*.py")
+
+      - name: Trigger Render deploy
+        if: success()
+        run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret not set — skipping deploy trigger."
+            echo "Add it under repo Settings > Secrets and variables > Actions to enable this step."
+            exit 0
+          fi
+          curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
