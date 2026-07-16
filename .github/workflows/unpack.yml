@@ -1,0 +1,38 @@
+name: Unpack project zip
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find and extract zip
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "No zip file found — nothing to do."
+            exit 0
+          fi
+          unzip -o "$ZIP_FILE" -d _extracted
+          TOPDIR=$(find _extracted -maxdepth 1 -mindepth 1 -type d | head -n 1)
+          shopt -s dotglob
+          if [ -n "$TOPDIR" ] && [ "$(find _extracted -maxdepth 1 -mindepth 1 | wc -l)" -eq 1 ]; then
+            mv "$TOPDIR"/* .
+          else
+            mv _extracted/* .
+          fi
+          rm -rf _extracted "$ZIP_FILE"
+
+      - name: Commit extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Auto-extract project zip"
+          git push
