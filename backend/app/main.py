@@ -19,7 +19,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import init_db
-from app.routers import admin, auth, billing, certificates, courses, dashboard, instructor, tutor
+from app.routers import admin, auth, billing, certificates, courses, dashboard, instructor, maintenance, tutor
 
 app = FastAPI(
     title="MonaLearn API",
@@ -47,6 +47,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(instructor.router, prefix="/api/instructor", tags=["instructor"])
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
+app.include_router(maintenance.router, prefix="/api/maintenance", tags=["maintenance"])
 app.include_router(courses.router, prefix="/api/courses", tags=["courses"])
 app.include_router(certificates.router, prefix="/api/certificates", tags=["certificates"])
 app.include_router(tutor.router, prefix="/api/tutor", tags=["tutor"])
