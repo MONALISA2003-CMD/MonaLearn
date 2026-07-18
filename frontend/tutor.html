@@ -321,16 +321,11 @@
   const sendBtn = document.getElementById('sendBtn');
   const newSessionBtn = document.getElementById('newSessionBtn');
 
-  const SYSTEM_PROMPT = `You are the MonaLearn AI Tutor, embedded inside the "Digital Marketing" course (MKT 132), currently on Lesson 8: Conversion funnels. The student is an adult learner working through MonaLearn's practical, career-focused curriculum.
-
-Behave like a genuinely good human instructor, not a generic assistant:
-- Explain concepts clearly and concretely, using small-business or entrepreneurship examples where useful.
-- Keep answers focused: usually 3-6 sentences unless the student asks for a full study plan, a list, or more depth.
-- When helpful, ask a short checking question back, or offer to quiz the student.
-- If the student seems confused, explain it a different way rather than repeating yourself.
-- Be direct and substantive rather than flattering. Do not open with praise like "great question."
-- You may use short markdown-style lists when they genuinely aid clarity, but avoid over-formatting a short answer.
-- Do not claim to know things about this specific student beyond what's in the conversation.`;
+  // Points at the backend's /api/tutor/chat — the system prompt now lives
+  // there (app/routers/tutor.py), not here, since the whole point of
+  // routing through the backend is that the browser never talks to the AI
+  // provider directly. Update this to your real Render URL once deployed.
+  const API_BASE_URL = "http://localhost:8000";
 
   // Conversation history sent to the API (excludes the hardcoded opening line, which is just UI framing)
   let history = [];
@@ -366,131 +361,4 @@ Behave like a genuinely good human instructor, not a generic assistant:
     wrap.className = 'msg ' + (role === 'user' ? 'user' : 'tutor');
     const time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     wrap.innerHTML = `
-      <div class="msg-avatar">${role === 'user' ? 'A' : 'AI'}</div>
-      <div class="msg-body">
-        <div class="bubble">${renderMarkdownLite(text)}</div>
-        <div class="msg-time">${role === 'user' ? 'You' : 'Tutor'} · ${time}</div>
-      </div>`;
-    chatInner.appendChild(wrap);
-    scrollToBottom();
-    return wrap;
-  }
-
-  function addTyping(){
-    const wrap = document.createElement('div');
-    wrap.className = 'msg tutor';
-    wrap.id = 'typingMsg';
-    wrap.innerHTML = `
-      <div class="msg-avatar">AI</div>
-      <div class="msg-body">
-        <div class="bubble typing-bubble"><span></span><span></span><span></span></div>
-      </div>`;
-    chatInner.appendChild(wrap);
-    scrollToBottom();
-  }
-
-  function removeTyping(){
-    const el = document.getElementById('typingMsg');
-    if(el) el.remove();
-  }
-
-  function addError(text){
-    const wrap = document.createElement('div');
-    wrap.className = 'msg tutor';
-    wrap.innerHTML = `
-      <div class="msg-avatar">AI</div>
-      <div class="msg-body"><div class="error-note">${text}</div></div>`;
-    chatInner.appendChild(wrap);
-    scrollToBottom();
-  }
-
-  async function sendMessage(text){
-    if(!text.trim() || isStreaming) return;
-    isStreaming = true;
-    addMessage('user', text);
-    history.push({ role: 'user', content: text });
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    updateSendState();
-    addTyping();
-
-    try{
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: history
-        })
-      });
-      const data = await response.json();
-      removeTyping();
-
-      let replyText = '';
-      if(data && data.content){
-        replyText = data.content.map(block => block.type === 'text' ? block.text : '').filter(Boolean).join('\n');
-      }
-      if(!replyText){
-        throw new Error('empty response');
-      }
-      addMessage('tutor', replyText);
-      history.push({ role: 'assistant', content: replyText });
-    } catch(err){
-      removeTyping();
-      addError("The tutor couldn't respond just now. Please try again in a moment.");
-      console.error('MonaLearn tutor error:', err);
-    } finally {
-      isStreaming = false;
-    }
-  }
-
-  function updateSendState(){
-    sendBtn.classList.toggle('ready', chatInput.value.trim().length > 0 && !isStreaming);
-  }
-
-  chatInput.addEventListener('input', () => {
-    chatInput.style.height = 'auto';
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-    updateSendState();
-  });
-
-  chatInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && !e.shiftKey){
-      e.preventDefault();
-      sendMessage(chatInput.value);
-    }
-  });
-
-  sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
-
-  document.querySelectorAll('.quick-prompt, .sugg-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const prompt = btn.getAttribute('data-prompt');
-      if(prompt) sendMessage(prompt);
-    });
-  });
-
-  newSessionBtn.addEventListener('click', () => {
-    history = [];
-    chatInner.innerHTML = `
-      <div class="day-divider">Today</div>
-      <div class="msg tutor">
-        <div class="msg-avatar">AI</div>
-        <div class="msg-body">
-          <div class="bubble">New session started. What would you like to work on?</div>
-          <div class="msg-time">Tutor · just now</div>
-        </div>
-      </div>`;
-  });
-
-  document.querySelectorAll('.session-item').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.session-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    });
-  });
-</script>
-</body>
-</html>
+      <div class="msg-avatar">${role === 'user' ? 'A
