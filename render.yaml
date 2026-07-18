@@ -4,7 +4,7 @@
 #   1. Push this repo to GitHub.
 #   2. In Render: New > Blueprint > pick this repo. Render reads this file
 #      and provisions the service below.
-#   3. Set ANTHROPIC_API_KEY, DATABASE_URL, JWT_SECRET_KEY, and SEED_SECRET
+#   3. Set GOOGLE_API_KEY, DATABASE_URL, JWT_SECRET_KEY, and SEED_SECRET
 #      in the Render dashboard for monalearn-api (they're marked
 #      sync: false below so they're never committed to git).
 #   4. Turn OFF "Auto-Deploy" on monalearn-api in Render's settings if you're
@@ -33,7 +33,7 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
-      - key: ANTHROPIC_API_KEY
+      - key: GOOGLE_API_KEY
         sync: false
       - key: DATABASE_URL
         sync: false
