@@ -14,7 +14,7 @@
  */
 const MonaAuth = (() => {
   const TOKEN_KEY = "monalearn_token";
-  const API_BASE_URL = "http://localhost:8000";
+  const API_BASE_URL = "https://monalearn-api.onrender.com";
 
   function getToken() {
     try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; }
