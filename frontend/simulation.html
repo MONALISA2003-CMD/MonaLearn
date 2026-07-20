@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venture Sim — MonaLearn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F1B2E; --navy-2:#16243C; --navy-3:#1D2E48;
+    --brass:#C7A248; --brass-soft:#E4CE8E;
+    --teal:#3A7D77; --teal-soft:#8FCFC7;
+    --coral:#C56A50; --coral-soft:#E5A695;
+    --parchment:#F3EEE2; --parchment-2:#EAE3D2; --panel:#FBF9F3;
+    --ink:#1A1F2B; --ink-soft:rgba(26,31,43,0.62); --cream:#EDE7D9;
+    --line:rgba(26,31,43,0.1); --line-soft:rgba(26,31,43,0.07);
+    --radius:8px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Inter', sans-serif; background:var(--parchment); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:600; letter-spacing:-0.01em; line-height:1.1;}
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:'Inter',sans-serif; cursor:pointer;}
+  input[type=range]{accent-color:var(--teal);}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(26,31,43,0.18); border-radius:8px;}
+  :focus-visible{outline:2px solid var(--brass); outline-offset:2px;}
+  .skip-link{position:absolute; left:-999px; background:var(--brass); color:var(--navy); padding:12px 18px; border-radius:3px; font-size:0.85rem; font-weight:600; z-index:200;}
+  .skip-link:focus{left:16px; top:16px;}
+  .icon{width:18px; height:18px; flex-shrink:0;}
+
+  .shell{display:flex; min-height:100vh;}
+  .sidebar{width:220px; flex-shrink:0; background:var(--navy); color:var(--cream); display:flex; flex-direction:column; padding:22px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+  .side-logo{font-family:'Fraunces',serif; font-weight:600; font-size:1.1rem; padding:6px 10px 20px; display:flex; align-items:center; gap:8px;}
+  .side-logo .dot{color:var(--brass); font-size:1.3rem; line-height:0;}
+  .side-nav{display:flex; flex-direction:column; gap:2px;}
+  .side-link{display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:6px; font-size:0.86rem; color:rgba(237,231,217,0.68); border:none; background:none; width:100%; text-align:left; transition:background .15s, color .15s;}
+  .side-link:hover{background:rgba(237,231,217,0.06); color:var(--cream);}
+  .side-link.active{background:rgba(199,162,72,0.14); color:var(--brass-soft);}
+  @media (max-width:960px){
+    .sidebar{position:fixed; left:0; top:0; z-index:80; transform:translateX(-100%); transition:transform .28s ease; box-shadow:0 0 40px rgba(0,0,0,0.3);}
+    .sidebar.open{transform:translateX(0);}
+  }
+  .sidebar-scrim{display:none;}
+  @media (max-width:960px){
+    .sidebar-scrim{display:block; position:fixed; inset:0; background:rgba(15,27,46,0.45); z-index:75; opacity:0; pointer-events:none; transition:opacity .28s;}
+    .sidebar-scrim.open{opacity:1; pointer-events:auto;}
+  }
+
+  .main-col{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 28px; background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:40;}
+  .menu-btn{display:none; background:none; border:none;}
+  @media (max-width:960px){ .menu-btn{display:flex;} }
+  .top-title{font-size:1rem; font-weight:600; display:flex; align-items:center; gap:10px;}
+  .top-title .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:0.68rem; color:var(--teal); text-transform:uppercase; letter-spacing:0.08em; font-weight:500;}
+  .reset-btn{border:1px solid var(--line); background:none; border-radius:6px; padding:8px 14px; font-size:0.82rem; color:var(--ink-soft);}
+  .reset-btn:hover{border-color:var(--coral); color:var(--coral);}
+
+  .content{padding:26px; max-width:1280px; width:100%; margin:0 auto;}
+
+  /* Company header */
+  .company-bar{
+    background:var(--navy); color:var(--cream); border-radius:var(--radius); padding:22px 26px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:20px;
+    position:relative; overflow:hidden;
+  }
+  .company-bar::after{content:""; position:absolute; inset:0; background:radial-gradient(420px 220px at 100% 0%, rgba(199,162,72,0.14), transparent 60%); pointer-events:none;}
+  .company-id{position:relative; z-index:1;}
+  .company-id .tag{font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--brass-soft); letter-spacing:0.06em;}
+  .company-id h1{font-size:1.4rem; margin-top:4px;}
+  .month-track{display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .month-dots{display:flex; gap:4px;}
+  .month-dot{width:6px; height:6px; border-radius:50%; background:rgba(237,231,217,0.2);}
+  .month-dot.done{background:var(--brass);}
+  .month-dot.current{background:var(--brass-soft); box-shadow:0 0 0 3px rgba(228,206,142,0.25);}
+  .company-kpis{display:flex; gap:26px; position:relative; z-index:1; flex-wrap:wrap;}
+  .kpi{text-align:right;}
+  .kpi .num{font-family:'Fraunces',serif; font-size:1.4rem;}
+  .kpi .num.up{color:var(--teal-soft);}
+  .kpi .num.down{color:var(--coral-soft);}
+  .kpi .label{font-size:0.72rem; color:rgba(237,231,217,0.55); margin-top:2px;}
+
+  .grid{display:grid; grid-template-columns:1.6fr 1fr; gap:20px;}
+  @media (max-width:1080px){ .grid{grid-template-columns:1fr;} }
+  .stack{display:flex; flex-direction:column; gap:20px;}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px;}
+  .card-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px;}
+  .card-head h2{font-size:1.05rem;}
+  .card-head .sub{font-size:0.78rem; color:var(--ink-soft);}
+
+  /* Decision card */
+  .decision-card{border:1px solid var(--brass); background:linear-gradient(180deg, rgba(199,162,72,0.06), transparent 40%);}
+  .decision-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--brass); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .decision-title{font-size:1.2rem; margin-bottom:8px;}
+  .decision-desc{font-size:0.92rem; color:var(--ink-soft); line-height:1.6; margin-bottom:18px;}
+  .option-list{display:flex; flex-direction:column; gap:10px;}
+  .option-btn{
+    display:flex; justify-content:space-between; align-items:center; gap:14px;
+    text-align:left; border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:14px 16px;
+    transition:border-color .15s, background .15s;
+  }
+  .option-btn:hover:not(:disabled){border-color:var(--teal); background:var(--parchment);}
+  .option-btn:disabled{opacity:0.45; cursor:default;}
+  .option-btn .opt-label{font-size:0.9rem; font-weight:500;}
+  .option-btn .opt-note{font-size:0.78rem; color:var(--ink-soft); margin-top:3px;}
+  .option-btn svg{flex-shrink:0; opacity:0.4;}
+
+  .outcome-banner{
+    margin-top:16px; padding:14px 16px; border-radius:8px; background:rgba(58,125,119,0.08);
+    border:1px solid rgba(58,125,119,0.25); font-size:0.86rem; display:none; flex-direction:column; gap:8px;
+  }
+  .outcome-banner.show{display:flex;}
+  .outcome-deltas{display:flex; gap:14px; flex-wrap:wrap;}
+  .delta{font-family:'IBM Plex Mono',monospace; font-size:0.8rem; padding:3px 9px; border-radius:12px;}
+  .delta.pos{color:#2E6B54; background:rgba(58,125,119,0.14);}
+  .delta.neg{color:#A34A34; background:rgba(197,106,80,0.14);}
+  .advance-row{display:flex; justify-content:flex-end; margin-top:16px;}
+  .btn{display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:5px; font-size:0.85rem; font-weight:600; border:1px solid transparent; transition:all .2s;}
+  .btn-brass{background:var(--brass); color:var(--navy);}
+  .btn-brass:hover:not(:disabled){background:var(--brass-soft);}
+  .btn-brass:disabled{opacity:0.4; cursor:default;}
+  .btn-line{border-color:var(--line); color:var(--ink); background:none;}
+  .btn-line:hover{border-color:var(--teal); color:var(--teal);}
+
+  /* Revenue chart */
+  .chart-row{display:flex; align-items:flex-end; gap:8px; height:120px; padding-top:10px;}
+  .chart-bar-wrap{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end;}
+  .chart-bar{width:100%; max-width:34px; background:var(--teal); border-radius:4px 4px 0 0; transition:height .6s ease;}
+  .chart-bar-wrap .m-label{font-size:0.66rem; color:var(--ink-soft);}
+
+  /* Budget allocator */
+  .budget-row{margin-bottom:16px;}
+  .budget-row-head{display:flex; justify-content:space-between; font-size:0.86rem; margin-bottom:6px;}
+  .budget-row-head .name{display:flex; align-items:center; gap:8px;}
+  .swatch{width:9px; height:9px; border-radius:2px;}
+  .budget-row input[type=range]{width:100%;}
+  .budget-total{
+    display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:14px;
+    border-top:1px solid var(--line-soft); font-size:0.84rem;
+  }
+  .budget-total .num{font-family:'IBM Plex Mono',monospace;}
+  .budget-stack{display:flex; height:8px; border-radius:5px; overflow:hidden; margin-top:12px;}
+  .budget-stack div{transition:width .3s ease;}
+
+  /* Team roster */
+  .team-member{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-soft);}
+  .team-member:last-child{border-bottom:none;}
+  .team-avatar{width:32px; height:32px; border-radius:50%; background:var(--parchment-2); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:600; font-size:0.8rem; flex-shrink:0;}
+  .team-info{flex:1; min-width:0;}
+  .team-info .name{font-size:0.86rem;}
+  .team-info .role{font-size:0.74rem; color:var(--ink-soft);}
+  .team-salary{font-family:'IBM Plex Mono',monospace; font-size:0.76rem; color:var(--ink-soft); flex-shrink:0;}
+
+  .candidate-card{border:1px solid var(--line); border-radius:8px; padding:14px; margin-top:10px;}
+  .candidate-card .name{font-size:0.88rem; font-weight:600;}
+  .candidate-card .role{font-size:0.78rem; color:var(--teal); margin-top:1px;}
+  .candidate-card .desc{font-size:0.8rem; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+  .candidate-card .foot{display:flex; justify-content:space-between; align-items:center; margin-top:10px;}
+  .candidate-card .salary{font-family:'IBM Plex Mono',monospace; font-size:0.78rem;}
+
+  /* Timeline / log */
+  .log-list{display:flex; flex-direction:column; gap:0; max-height:340px; overflow-y:auto;}
+  .log-item{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line-soft);}
+  .log-item:last-child{border-bottom:none;}
+  .log-month{width:52px; flex-shrink:0; font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--ink-soft); padding-top:1px;}
+  .log-body .title{font-size:0.84rem;}
+  .log-body .meta{font-size:0.74rem; color:var(--ink-soft); margin-top:2px;}
+
+  .end-card{text-align:center; padding:40px 24px;}
+  .end-card h2{font-size:1.5rem; margin-bottom:10px;}
+  .end-card p{color:var(--ink-soft); max-width:44ch; margin:0 auto 20px; line-height:1.6;}
+
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){ *{transition-duration:0.001ms !important;} }
+</style>
+</head>
+<body>
+<a href="#content" class="skip-link">Skip to content</a>
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-logo">MonaLearn<span class="dot">·</span></div>
+    <nav class="side-nav">
+      <a class="side-link" href="dashboard.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>Dashboard</a>
+      <a class="side-link" href="marketplace.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>My Courses</a>
+      <a class="side-link" href="marketplace.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="14" width="7" height="7" rx="1.2"/></svg>Academies</a>
+      <button class="side-link active" aria-current="page"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Simulations</button>
+      <a class="side-link" href="tutor.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-11.9 7.8L4 21l1.7-5.1A8.5 8.5 0 1 1 21 11.5Z"/></svg>AI Tutor</a>
+      <a class="side-link" href="verify.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13 7 22l5-3 5 3-1.5-9"/></svg>Certificates</a>
+    </nav>
+  </aside>
+  <div class="sidebar-scrim" id="scrim"></div>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="top-title"><span class="eyebrow">BUS 101 · SIMULATION</span></div>
+      </div>
+      <button class="reset-btn" id="resetBtn">Restart simulation</button>
+    </header>
+
+    <div class="content" id="content">
+      <div class="company-bar reveal">
+        <div class="company-id">
+          <div class="tag mono">YOUR VENTURE</div>
+          <h1 id="companyName">Amara's Craft Goods Co.</h1>
+          <div class="month-track">
+            <span style="font-size:0.78rem; color:rgba(237,231,217,0.65);" id="monthLabel">Month 1 of 12</span>
+            <div class="month-dots" id="monthDots"></div>
+          </div>
+        </div>
+        <div class="company-kpis">
+          <div class="kpi"><div class="num mono" id="kpiCash">$8,000</div><div class="label">Cash on hand</div></div>
+          <div class="kpi"><div class="num mono" id="kpiRevenue">$0</div><div class="label">Last month's revenue</div></div>
+          <div class="kpi"><div class="num mono" id="kpiCustomers">120</div><div class="label">Customers</div></div>
+          <div class="kpi"><div class="num mono" id="kpiSatisfaction">72%</div><div class="label">Satisfaction</div></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="stack">
+
+          <div class="card decision-card reveal" id="decisionCard">
+            <div class="decision-eyebrow">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6z"/></svg>
+              Decision needed
+            </div>
+            <h3 class="decision-title" id="decisionTitle">Loading…</h3>
+            <p class="decision-desc" id="decisionDesc"></p>
+            <div class="option-list" id="optionList"></div>
+            <div class="outcome-banner" id="outcomeBanner">
+              <div id="outcomeText"></div>
+              <div class="outcome-deltas" id="outcomeDeltas"></div>
+            </div>
+            <div class="advance-row">
+              <button class="btn btn-brass" id="advanceBtn" disabled>Advance to next month</button>
+            </div>
+          </div>
+
+          <div class="card reveal">
+            <div class="card-head">
+              <h2>Revenue by month</h2>
+              <span class="sub" id="chartSub">Month 1 of 12</span>
+            </div>
+            <div class="chart-row" id="chartRow"></div>
+          </div>
+
+          <div class="card reveal">
+            <div class="card-head">
+              <h2>Decision log</h2>
+              <span class="sub">What you've done so far</span>
+            </div>
+            <div class="log-list" id="logList">
+              <div class="log-item"><div class="log-month mono">M1</div><div class="log-body"><div class="title">Venture founded</div><div class="meta">Started with $8,000 in savings and 120 early customers.</div></div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="stack">
+
+          <div class="card reveal">
+            <div class="card-head">
+              <h2>Monthly budget</h2>
+              <span class="sub mono" id="budgetTotalLabel">$1,500</span>
+            </div>
+            <div class="budget-row">
+              <div class="budget-row-head">
+                <span class="name"><span class="swatch" style="background:var(--brass);"></span>Marketing</span>
+                <span class="mono" id="mktPctLabel">45%</span>
+              </div>
+              <input type="range" id="mktSlider" min="0" max="100" value="45">
+            </div>
+            <div class="budget-row">
+              <div class="budget-row-head">
+                <span class="name"><span class="swatch" style="background:var(--teal);"></span>Operations</span>
+                <span class="mono" id="opsPctLabel">35%</span>
+              </div>
+              <input type="range" id="opsSlider" min="0" max="100" value="35">
+            </div>
+            <div class="budget-row">
+              <div class="budget-row-head">
+                <span class="name"><span class="swatch" style="background:var(--navy-3);"></span>Hiring fund</span>
+                <span class="mono" id="hirePctLabel">20%</span>
+              </div>
+              <input type="range" id="hireSlider" min="0" max="100" value="20">
+            </div>
+            <div class="budget-stack" id="budgetStack">
+              <div style="width:45%; background:var(--brass);"></div>
+              <div style="width:35%; background:var(--teal);"></div>
+              <div style="width:20%; background:var(--navy-3);"></div>
+            </div>
+            <div class="budget-total"><span>Allocated</span><span class="num" id="budgetSumLabel">100%</span></div>
+          </div>
+
+          <div class="card reveal">
+            <div class="card-head">
+              <h2>Team</h2>
+              <span class="sub" id="teamCount">1 person</span>
+            </div>
+            <div id="teamList">
+              <div class="team-member">
+                <div class="team-avatar">A</div>
+                <div class="team-info"><div class="name">You — Founder</div><div class="role">Runs the shop day to day</div></div>
+                <div class="team-salary">—</div>
+              </div>
+            </div>
+            <div id="candidateList"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- State ----------
+  const TOTAL_MONTHS = 12;
+  const MONTHLY_BUDGET = 1500;
+
+  const SCENARIOS = [
+    {
+      title: "A local newspaper offers a feature article",
+      desc: "For $300, a city newspaper will run a piece introducing your brand to its readers.",
+      options: [
+        { label: "Pay for the feature", note: "Costs cash now, likely grows customers", effects: { cash: -300, customers: 22, satisfaction: 2 } },
+        { label: "Decline and keep the cash", note: "Safe, modest word-of-mouth growth", effects: { cash: 0, customers: 3, satisfaction: 0 } },
+        { label: "Negotiate a smaller mention", note: "A middle path, cheaper but smaller reach", effects: { cash: -120, customers: 10, satisfaction: 1 } },
+      ],
+    },
+    {
+      title: "A regular customer complains about a late order",
+      desc: "Shipping has been slower than promised. You can refund them, upgrade their shipping for free, or apologize and move on.",
+      options: [
+        { label: "Full refund plus an apology", note: "Costs cash, wins loyalty", effects: { cash: -60, satisfaction: 6, customers: 0 } },
+        { label: "Free shipping upgrade next time", note: "Cheap goodwill, smaller effect", effects: { cash: -15, satisfaction: 3, customers: 0 } },
+        { label: "A polite apology, nothing more", note: "Free, but risks losing them", effects: { cash: 0, satisfaction: -4, customers: -3 } },
+      ],
+    },
+    {
+      title: "A supplier offers a bulk discount",
+      desc: "Buying three months of materials at once saves 15%, but ties up cash you might need elsewhere.",
+      options: [
+        { label: "Buy in bulk now", note: "Saves money long-term, less cash on hand", effects: { cash: -400, satisfaction: 1, customers: 0 } },
+        { label: "Stick with monthly orders", note: "Keeps cash flexible", effects: { cash: 0, satisfaction: 0, customers: 0 } },
+      ],
+    },
+    {
+      title: "Instagram wants to feature you in a small-business spotlight",
+      desc: "It's free exposure, but you'd need to spend a few days prepping content instead of fulfilling orders.",
+      options: [
+        { label: "Do it — prioritize the spotlight", note: "Strong customer growth, a bit of short-term chaos", effects: { cash: -50, customers: 30, satisfaction: -2 } },
+        { label: "Ask to reschedule for next month", note: "Keeps things steady now", effects: { cash: 0, customers: 4, satisfaction: 0 } },
+      ],
+    },
+    {
+      title: "A competitor drops their prices",
+      desc: "You can match them, hold your price and lean on quality, or raise prices slightly and reposition as premium.",
+      options: [
+        { label: "Match their price", note: "Protects customer count, thins margins", effects: { cash: -80, customers: 12, satisfaction: -1 } },
+        { label: "Hold steady, market on quality", note: "Balanced, depends on brand strength", effects: { cash: -100, customers: 5, satisfaction: 2 } },
+        { label: "Raise prices, go premium", note: "Riskier, could lose price-sensitive customers", effects: { cash: 150, customers: -10, satisfaction: 3 } },
+      ],
+    },
+    {
+      title: "Your busiest employee asks for a raise",
+      desc: "They've been reliable since month one. A raise costs more monthly but protects morale and output.",
+      options: [
+        { label: "Give the raise", note: "Costs more each month, keeps morale high", effects: { cash: -40, satisfaction: 4, customers: 0 } },
+        { label: "Offer a one-time bonus instead", note: "Cheaper now, may come up again", effects: { cash: -150, satisfaction: 2, customers: 0 } },
+        { label: "Say no for now", note: "Saves cash, risks morale", effects: { cash: 0, satisfaction: -5, customers: 0 } },
+      ],
+    },
+  ];
+
+  const CANDIDATES = [
+    { name: "Grace N.", role: "Operations Assistant", salary: 220, desc: "Keeps fulfillment on schedule. Improves satisfaction each month.", boost: { satisfaction: 3 } },
+    { name: "Kwame O.", role: "Marketing Assistant", salary: 260, desc: "Runs your social channels. Improves customer growth each month.", boost: { customers: 6 } },
+    { name: "Fatima B.", role: "Bookkeeper", salary: 200, desc: "Keeps the books tight. Reduces monthly overhead slightly.", boost: { cash: 40 } },
+  ];
+
+  let state = {
+    month: 1,
+    cash: 8000,
+    customers: 120,
+    satisfaction: 72,
+    revenueHistory: [],
+    team: [],
+    hiredNames: new Set(),
+    budget: { marketing: 45, operations: 35, hiring: 20 },
+    scenarioPool: shuffle([...Array(SCENARIOS.length).keys()]),
+    scenarioCursor: 0,
+    decided: false,
+    ended: false,
+  };
+
+  function shuffle(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function fmtMoney(n){
+    const sign = n < 0 ? '-' : '';
+    return sign + '$' + Math.abs(Math.round(n)).toLocaleString();
+  }
+
+  // ---------- Sidebar (mobile) ----------
+  const sidebar = document.getElementById('sidebar');
+  const scrim = document.getElementById('scrim');
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    scrim.classList.toggle('open');
+  });
+  scrim.addEventListener('click', () => { sidebar.classList.remove('open'); scrim.classList.remove('open'); });
+
+  // ---------- Budget sliders ----------
+  const mktSlider = document.getElementById('mktSlider');
+  const opsSlider = document.getElementById('opsSlider');
+  const hireSlider = document.getElementById('hireSlider');
+
+  function renderBudget(){
+    document.getElementById('mktPctLabel').textContent = state.budget.marketing + '%';
+    document.getElementById('opsPctLabel').textContent = state.budget.operations + '%';
+    document.getElementById('hirePctLabel').textContent = state.budget.hiring + '%';
+    const sum = state.budget.marketing + state.budget.operations + state.budget.hiring;
+    const sumLabel = document.getElementById('budgetSumLabel');
+    sumLabel.textContent = sum + '%';
+    sumLabel.style.color = sum === 100 ? 'var(--teal)' : 'var(--coral)';
+    document.getElementById('budgetTotalLabel').textContent = fmtMoney(MONTHLY_BUDGET);
+    const stack = document.getElementById('budgetStack').children;
+    stack[0].style.width = state.budget.marketing + '%';
+    stack[1].style.width = state.budget.operations + '%';
+    stack[2].style.width = state.budget.hiring + '%';
+  }
+
+  function normalizeBudget(changed){
+    // Simple rebalance: clamp the changed slider, distribute remainder proportionally across the other two
+    const keys = ['marketing','operations','hiring'];
+    const others = keys.filter(k => k !== changed);
+    const remainder = 100 - state.budget[changed];
+    const otherSum = state.budget[others[0]] + state.budget[others[1]];
+    if(otherSum <= 0){
+      state.budget[others[0]] = Math.round(remainder/2);
+      state.budget[others[1]] = remainder - state.budget[others[0]];
+    } else {
+      state.budget[others[0]] = Math.round(remainder * (state.budget[others[0]]/otherSum));
+      state.budget[others[1]] = remainder - state.budget[others[0]];
+    }
+  }
+
+  mktSlider.addEventListener('input', () => { state.budget.marketing = +mktSlider.value; normalizeBudget('marketing'); syncSliders(); renderBudget(); });
+  opsSlider.addEventListener('input', () => { state.budget.operations = +opsSlider.value; normalizeBudget('operations'); syncSliders(); renderBudget(); });
+  hireSlider.addEventListener('input', () => { state.budget.hiring = +hireSlider.value; normalizeBudget('hiring'); syncSliders(); renderBudget(); });
+
+  function syncSliders(){
+    mktSlider.value = state.budget.marketing;
+    opsSlider.value = state.budget.operations;
+    hireSlider.value = state.budget.hiring;
+  }
+
+  // ---------- Team ----------
+  function renderTeam(){
+    const list = document.getElementById('teamList');
+    list.innerHTML = `<div class="team-member">
+        <div class="team-avatar">A</div>
+        <div class="team-info"><div class="name">You — Founder</div><div class="role">Runs the shop day to day</div></div>
+        <div class="team-salary">—</div>
+      </div>`;
+    state.team.forEach(member => {
+      const el = document.createElement('div');
+      el.className = 'team-member';
+      el.innerHTML = `
+        <div class="team-avatar">${member.name[0]}</div>
+        <div class="team-info"><div class="name">${member.name}</div><div class="role">${member.role}</div></div>
+        <div class="team-salary mono">${fmtMoney(member.salary)}/mo</div>`;
+      list.appendChild(el);
+    });
+    document.getElementById('teamCount').textContent = (state.team.length + 1) + (state.team.length === 0 ? ' person' : ' people');
+
+    const candidateList = document.getElementById('candidateList');
+    candidateList.innerHTML = '';
+    CANDIDATES.filter(c => !state.hiredNames.has(c.name)).forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'candidate-card';
+      card.innerHTML = `
+        <div class="name">${c.name}</div>
+        <div class="role">${c.role}</div>
+        <div class="desc">${c.desc}</div>
+        <div class="foot">
+          <span class="salary mono">${fmtMoney(c.salary)}/mo</span>
+          <button class="btn btn-line" data-hire="${c.name}">Hire</button>
+        </div>`;
+      candidateList.appendChild(card);
+    });
+    candidateList.querySelectorAll('[data-hire]').forEach(btn => {
+      btn.addEventListener('click', () => hireCandidate(btn.getAttribute('data-hire')));
+    });
+  }
+
+  function hireCandidate(name){
+    const candidate = CANDIDATES.find(c => c.name === name);
+    if(!candidate || state.hiredNames.has(name)) return;
+    state.team.push(candidate);
+    state.hiredNames.add(name);
+    addLog('Hired ' + candidate.name, candidate.role + ' joined the team at ' + fmtMoney(candidate.salary) + '/month.');
+    renderTeam();
+  }
+
+  // ---------- KPI + chart rendering ----------
+  function renderKpis(){
+    document.getElementById('companyName').textContent = "Amara's Craft Goods Co.";
+    document.getElementById('monthLabel').textContent = `Month ${state.month} of ${TOTAL_MONTHS}`;
+    document.getElementById('kpiCash').textContent = fmtMoney(state.cash);
+    document.getElementById('kpiCustomers').textContent = Math.round(state.customers).toLocaleString();
+    document.getElementById('kpiSatisfaction').textContent = Math.round(state.satisfaction) + '%';
+    const lastRev = state.revenueHistory[state.revenueHistory.length - 1];
+    document.getElementById('kpiRevenue').textContent = lastRev ? fmtMoney(lastRev) : '$0';
+
+    const dotsWrap = document.getElementById('monthDots');
+    dotsWrap.innerHTML = '';
+    for(let i = 1; i <= TOTAL_MONTHS; i++){
+      const dot = document.createElement('span');
+      dot.className = 'month-dot' + (i < state.month ? ' done' : '') + (i === state.month ? ' current' : '');
+      dotsWrap.appendChild(dot);
+    }
+  }
+
+  function renderChart(){
+    const row = document.getElementById('chartRow');
+    row.innerHTML = '';
+    const max = Math.max(...state.revenueHistory, 1000);
+    for(let i = 0; i < TOTAL_MONTHS; i++){
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-bar-wrap';
+      const rev = state.revenueHistory[i];
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.height = rev ? Math.max(6, (rev / max) * 100) + '%' : '3px';
+      bar.style.background = rev ? 'var(--teal)' : 'var(--parchment-2)';
+      const label = document.createElement('div');
+      label.className = 'm-label mono';
+      label.textContent = 'M' + (i + 1);
+      wrap.appendChild(bar);
+      wrap.appendChild(label);
+      row.appendChild(wrap);
+    }
+    document.getElementById('chartSub').textContent = `Month ${state.month} of ${TOTAL_MONTHS}`;
+  }
+
+  function addLog(title, meta){
+    const list = document.getElementById('logList');
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    item.innerHTML = `<div class="log-month mono">M${state.month}</div><div class="log-body"><div class="title">${title}</div><div class="meta">${meta}</div></div>`;
+    list.insertBefore(item, list.firstChild);
+  }
+
+  // ---------- Decisions ----------
+  let currentScenario = null;
+  let pendingEffects = null;
+
+  function loadScenario(){
+    if(state.scenarioCursor >= state.scenarioPool.length){
+      state.scenarioPool = shuffle([...Array(SCENARIOS.length).keys()]);
+      state.scenarioCursor = 0;
+    }
+    currentScenario = SCENARIOS[state.scenarioPool[state.scenarioCursor]];
+    state.scenarioCursor++;
+    state.decided = false;
+
+    document.getElementById('decisionTitle').textContent = currentScenario.title;
+    document.getElementById('decisionDesc').textContent = currentScenario.desc;
+    document.getElementById('outcomeBanner').classList.remove('show');
+    document.getElementById('advanceBtn').disabled = true;
+
+    const optionList = document.getElementById('optionList');
+    optionList.innerHTML = '';
+    currentScenario.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<div><div class="opt-label">${opt.label}</div><div class="opt-note">${opt.note}</div></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>`;
+      btn.addEventListener('click', () => chooseOption(idx));
+      optionList.appendChild(btn);
+    });
+  }
+
+  function chooseOption(idx){
+    if(state.decided) return;
+    state.decided = true;
+    const opt = currentScenario.options[idx];
+    pendingEffects = opt.effects;
+
+    document.querySelectorAll('.option-btn').forEach((btn, i) => {
+      btn.disabled = i !== idx;
+      if(i === idx) btn.style.borderColor = 'var(--teal)';
+    });
+
+    const banner = document.getElementById('outcomeBanner');
+    document.getElementById('outcomeText').textContent = `You chose: "${opt.label}."`;
+    const deltasWrap = document.getElementById('outcomeDeltas');
+    deltasWrap.innerHTML = '';
+    Object.entries(opt.effects).forEach(([key, val]) => {
+      if(val === 0) return;
+      const span = document.createElement('span');
+      span.className = 'delta ' + (val > 0 ? 'pos' : 'neg');
+      const labelMap = { cash: 'Cash', customers: 'Customers', satisfaction: 'Satisfaction' };
+      const display = key === 'cash' ? fmtMoney(val) : (val > 0 ? '+' : '') + Math.round(val);
+      span.textContent = labelMap[key] + ' ' + display;
+      deltasWrap.appendChild(span);
+    });
+    banner.classList.add('show');
+
+    addLog(currentScenario.title, `Chose: ${opt.label}`);
+    document.getElementById('advanceBtn').disabled = false;
+  }
+
+  function advanceMonth(){
+    if(!state.decided || state.ended) return;
+
+    // Apply decision effects
+    state.cash += pendingEffects.cash || 0;
+    state.customers = Math.max(0, state.customers + (pendingEffects.customers || 0));
+    state.satisfaction = Math.min(100, Math.max(0, state.satisfaction + (pendingEffects.satisfaction || 0)));
+
+    // Apply budget effects
+    const marketingSpend = MONTHLY_BUDGET * (state.budget.marketing / 100);
+    const opsSpend = MONTHLY_BUDGET * (state.budget.operations / 100);
+    const hireSpend = MONTHLY_BUDGET * (state.budget.hiring / 100);
+
+    const acquired = Math.round(marketingSpend / 22 + hireSpend / 60);
+    const churnRate = state.satisfaction < 50 ? 0.08 : 0.03;
+    const churned = Math.round(state.customers * churnRate);
+    state.customers = Math.max(0, state.customers + acquired - churned);
+    state.satisfaction = Math.min(100, Math.max(0, state.satisfaction + opsSpend / 250 - 1));
+
+    // Team effects
+    let salaryTotal = 0;
+    state.team.forEach(member => {
+      salaryTotal += member.salary;
+      if(member.boost.satisfaction) state.satisfaction = Math.min(100, state.satisfaction + member.boost.satisfaction);
+      if(member.boost.customers) state.customers += member.boost.customers;
+      if(member.boost.cash) state.cash += member.boost.cash;
+    });
+
+    // Revenue: driven by customer count and satisfaction, with a little randomness
+    const avgSpend = 28 + state.satisfaction / 6;
+    const revenue = Math.round(state.customers * avgSpend * (0.92 + Math.random() * 0.16));
+    state.revenueHistory.push(revenue);
+    state.cash += revenue - MONTHLY_BUDGET - salaryTotal;
+
+    addLog(`Month ${state.month} closed`, `Revenue ${fmtMoney(revenue)} · Spend ${fmtMoney(MONTHLY_BUDGET + salaryTotal)} · Cash ${fmtMoney(state.cash)}`);
+
+    state.month++;
+    renderKpis();
+    renderChart();
+    renderTeam();
+
+    if(state.month > TOTAL_MONTHS || state.cash < -500){
+      endSimulation();
+      return;
+    }
+    loadScenario();
+  }
+
+  function endSimulation(){
+    state.ended = true;
+    const decisionCard = document.getElementById('decisionCard');
+    const survived = state.cash >= 0;
+    decisionCard.innerHTML = `
+      <div class="end-card">
+        <h2>${survived ? 'Twelve months in the books.' : "The venture ran out of runway."}</h2>
+        <p>${survived
+          ? `Amara's Craft Goods Co. closed the year with ${fmtMoney(state.cash)} in cash, ${Math.round(state.customers)} customers, and ${Math.round(state.satisfaction)}% satisfaction. Compare your choices with a classmate's run in the community tab.`
+          : `Cash ran negative in month ${state.month - 1}. That's a normal outcome in a simulation, not a failing grade — the debrief is where the real learning happens.`}</p>
+        <button class="btn btn-brass" id="restartInline">Run it again</button>
+      </div>`;
+    document.getElementById('restartInline').addEventListener('click', resetSimulation);
+  }
+
+  // ---------- Reset ----------
+  function resetSimulation(){
+    state = {
+      month: 1, cash: 8000, customers: 120, satisfaction: 72,
+      revenueHistory: [], team: [], hiredNames: new Set(),
+      budget: { marketing: 45, operations: 35, hiring: 20 },
+      scenarioPool: shuffle([...Array(SCENARIOS.length).keys()]),
+      scenarioCursor: 0, decided: false, ended: false,
+    };
+    document.getElementById('logList').innerHTML = `<div class="log-item"><div class="log-month mono">M1</div><div class="log-body"><div class="title">Venture founded</div><div class="meta">Started with $8,000 in savings and 120 early customers.</div></div></div>`;
+    syncSliders();
+    renderBudget();
+    renderTeam();
+    renderKpis();
+    renderChart();
+    loadScenario();
+  }
+
+  document.getElementById('advanceBtn').addEventListener('click', advanceMonth);
+  document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+
+  // ---------- Reveal on scroll ----------
+  const revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in'));
+  }
+
+  // ---------- Init ----------
+  renderBudget();
+  renderTeam();
+  renderKpis();
+  renderChart();
+  loadScenario();
+</script>
+</body>
+</html>
